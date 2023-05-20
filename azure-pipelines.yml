@@ -12,7 +12,7 @@ steps:
     codeCoverageClassFilesDirectories: 'build/classes/main/'
     javaHomeOption: 'JDKVersion'
     sonarQubeRunAnalysis: false
-    spotBugsAnalysis: false
+    spotBugsAnalysis: true
 
 - task: SonarCloudPrepare@1
   inputs:
