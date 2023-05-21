@@ -92,13 +92,6 @@ jobs:
     - task: PowerShell@2
       inputs:
        targetType: 'inline'
-       script: 'Start-Job -ScriptBlock {kubectl port-forward deployment/microservice 8080:8080};'
+       script: 'Start-Job -ScriptBlock {kubectl port-forward deployment/lab-deployment 8080:8080};'
       displayName: 'Port forward'
 
-    - task: PowerShell@2
-      displayName: 'HTTP GET localhost:8080/greeting'
-      inputs:
-       targetType: 'inline'
-       script: |
-        $response = Invoke-RestMethod -Uri "http://localhost:8080/greeting"
-        Write-Host $response
