@@ -54,9 +54,15 @@ steps:
     repository: 'aibarra17/microservicio-spring'
     command: 'build'
     Dockerfile: '**/Dockerfile'
+    tags: |
+              $(Build.BuildId)
+              latest
 
 - task: Docker@2
   inputs:
     containerRegistry: 'Docker'
     repository: 'aibarra17/microservicio-spring'
     command: 'push'
+    tags: |
+              $(Build.BuildId)
+              latest
