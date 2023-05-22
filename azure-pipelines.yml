@@ -95,3 +95,8 @@ jobs:
        script: 'Start-Job -ScriptBlock {kubectl port-forward deployment/lab-deployment 8080:8080};'
       displayName: 'Port forward'
 
+    - task: CmdLine@2
+      inputs:
+          script: |
+              jmeter -n -t test.jmx -l resultados.jtl
+      displayName: 'JMeter'
