@@ -1,7 +1,6 @@
 package com.example.testingweb;
 
 import org.junit.jupiter.api.Test;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -11,17 +10,21 @@ import org.springframework.boot.web.server.LocalServerPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
-public class HttpRequestTest {
+class GreetingServiceTest {
 
-	@LocalServerPort
-	private int port;
+    @LocalServerPort
+    private int port;
 
-	@Autowired
-	private TestRestTemplate restTemplate;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
-	@Test
-	public void greetingShouldReturnDefaultMessage() throws Exception {
-		assertThat(this.restTemplate.getForObject("http://localhost:" + port + "/",
-				String.class)).contains("Finaliza el curso DevOps Foundation v4 - Andres Ibarra");
-	}
+    @Autowired
+    private GreetingService greetingService;
+
+    @Test
+    void greetShouldReturnDefaultMessage() {
+        GreetingService greetingService = new GreetingService();
+        String greeting = greetingService.greet();
+        assertThat(greeting).isEqualTo("Finaliza el curso DevOps Foundation v4 - Andres Ibarra");
+    }
 }

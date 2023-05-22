@@ -1,0 +1,104 @@
+trigger:
+  - 'feature-ms-AndresIbarra-mensaje'
+jobs:
+- job: Job1
+  displayName: 'Job Cloud'
+  pool:
+    vmImage: ubuntu-latest
+
+
+  steps:
+
+  - task: Gradle@3
+    inputs:
+      gradleWrapperFile: 'gradlew'
+      tasks: 'build jacocoTestReport jacocoTestCoverageVerification'
+      publishJUnitResults: true
+      testResultsFiles: '**/TEST-*.xml'
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: false
+      spotBugsAnalysis: false
+  - task: PublishCodeCoverageResults@1
+    inputs:
+      codeCoverageTool: 'JaCoCo'
+      summaryFileLocation: '$(System.DefaultWorkingDirectory)/build/reports/jacoco/test/jacocoTestReport.xml'
+      pathToSources: '$(System.DefaultWorkingDirectory)/src/main/java/'
+      reportDirectory: '$(System.DefaultWorkingDirectory)/build/reports/jacoco/test'
+      failIfCoverageEmpty: true
+    displayName: 'Resultado Cobertura Codigo'
+
+
+  - task: SonarCloudPrepare@1
+    inputs:
+      SonarCloud: 'SonarCloud'
+      organization: 'aibarra17'
+      projectKey: 'aibarra17_microservicio-spring'
+      projectName: 'microservicio-spring'
+      extraProperties: |
+          sonar.qualitygate.wait=true
+    displayName: 'SonarCloud Prepare'
+
+  - task: Gradle@3
+    inputs:
+      gradleWrapperFile: 'gradlew'
+      tasks: 'sonarqube'
+      publishJUnitResults: false
+      javaHomeOption: 'JDKVersion'
+      sonarQubeRunAnalysis: true
+      sqGradlePluginVersionChoice: 'specify'
+      sonarQubeGradlePluginVersion: '3.5.0.2730'
+      spotBugsAnalysis: false
+
+
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'Docker'
+      repository: 'aibarra17/microservicio-spring'
+      command: 'login'
+
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'Docker'
+      repository: 'aibarra17/microservicio-spring'
+      command: 'build'
+      Dockerfile: '**/Dockerfile'
+      tags: |
+                $(Build.BuildId)
+                latest
+
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'Docker'
+      repository: 'aibarra17/microservicio-spring'
+      command: 'push'
+      tags: |
+                $(Build.BuildId)
+                latest
+
+
+- job: Job2
+  dependsOn: Job1
+  displayName: 'Job local'
+  pool:
+#    vmImage: ubuntu-latest
+    name: aibarrakubernetes
+
+  steps:
+
+    - task: Kubernetes@1
+      inputs:
+        connectionType: 'None'
+        command: 'apply'
+        arguments: '--force -f deploy.yaml'
+        
+    - task: PowerShell@2
+      inputs:
+       targetType: 'inline'
+       script: 'Start-Job -ScriptBlock {kubectl port-forward deployment/lab-deployment 8080:8080};'
+      displayName: 'Port forward'
+
+    - task: CmdLine@2
+      inputs:
+          script: |
+              jmeter -n -t test.jmx -l resultados.jtl
+      displayName: 'JMeter'
