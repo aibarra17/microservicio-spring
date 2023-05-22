@@ -34,6 +34,8 @@ jobs:
       organization: 'aibarra17'
       projectKey: 'aibarra17_microservicio-spring'
       projectName: 'microservicio-spring'
+      extraProperties: |
+          sonar.qualitygate.wait=true
     displayName: 'SonarCloud Prepare'
 
   - task: Gradle@3
